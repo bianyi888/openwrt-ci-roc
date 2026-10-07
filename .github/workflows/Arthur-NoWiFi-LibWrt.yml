@@ -1,0 +1,26 @@
+name: Arthur-NoWiFi-LibWrt
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  Build:
+    uses: ./.github/workflows/Build-OpenWrt.yml
+    permissions:
+      contents: write
+      actions: write
+    with:
+      repo_url: https://github.com/laipeng668/openwrt-6.x.git
+      repo_branch: 25.12-nss
+      config_file: configs/Arthur.NoWiFi.config
+      firmware_tag: Arthur-NoWiFi
+      kernel_file: kernel-6.12
+      artifact_prefix: Arthur.NoWiFi
+      manifest_file: libwrt-qualcommax-ipq60xx.manifest
+      release_summary: >-
+        亚瑟（JDCloud RE-SS-01）LibWrt NSS 6.12 内核无 WiFi 版，带 daed/lucky/ttyd，argon 主题，已精简插件。
