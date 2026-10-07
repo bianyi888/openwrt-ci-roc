@@ -291,6 +291,10 @@ if package_enabled luci-app-lucky lucky; then
   clone_repository https://github.com/gdy666/luci-app-lucky main package/luci-app-lucky
 fi
 
+if package_enabled luci-app-daede daed; then
+  clone_repository https://github.com/kenzok8/openwrt-daede main package/openwrt-daede
+fi
+
 if package_enabled luci-app-wechatpush; then
   rm -rf feeds/luci/applications/luci-app-wechatpush
   clone_repository https://github.com/tty228/luci-app-wechatpush master package/luci-app-wechatpush
