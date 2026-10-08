@@ -293,6 +293,12 @@ fi
 
 if package_enabled luci-app-daede daed; then
   clone_repository https://github.com/kenzok8/openwrt-daede main package/openwrt-daede
+  # daed 需要 BPF 工具链（clang），否则 bpf-headers 编译失败（/invalid/clang）
+  DAED_MAKEFILE="package/openwrt-daede/daed/Makefile"
+  if [ -f "$DAED_MAKEFILE" ]; then
+    sed -i 's|+DAED_USE_VMLINUX_BTF:vmlinux-btf$|+DAED_USE_VMLINUX_BTF:vmlinux-btf \\\n\t$(BPF_DEPENDS)|' "$DAED_MAKEFILE"
+    grep -qF '$(BPF_DEPENDS)' "$DAED_MAKEFILE" && echo "daed Makefile patched: BPF_DEPENDS added" || { echo "ERROR: failed to patch daed Makefile"; exit 1; }
+  fi
 fi
 
 if package_enabled luci-app-wechatpush; then
