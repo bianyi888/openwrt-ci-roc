@@ -301,6 +301,28 @@ if package_enabled luci-app-daede daed; then
   fi
 fi
 
+if package_enabled luci-app-honk honk; then
+  # honk 从 kenzok8/small 稀疏检出（只拿 honk 和 luci-app-honk 目录）
+  rm -rf package/honk-src-tmp
+  clone_with_retry "package/honk-src-tmp" \
+    --depth=1 \
+    --no-tags \
+    --branch master \
+    --single-branch \
+    --filter=blob:none \
+    --sparse \
+    https://github.com/kenzok8/small
+  (
+    cd package/honk-src-tmp
+    git sparse-checkout set honk luci-app-honk
+  )
+  rm -rf package/honk package/luci-app-honk
+  mv package/honk-src-tmp/honk package/honk
+  mv package/honk-src-tmp/luci-app-honk package/luci-app-honk
+  rm -rf package/honk-src-tmp
+  echo "honk packages prepared from kenzok8/small"
+fi
+
 if package_enabled luci-app-wechatpush; then
   rm -rf feeds/luci/applications/luci-app-wechatpush
   clone_repository https://github.com/tty228/luci-app-wechatpush master package/luci-app-wechatpush
