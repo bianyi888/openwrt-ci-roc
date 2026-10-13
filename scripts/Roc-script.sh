@@ -320,6 +320,14 @@ if package_enabled luci-app-honk honk; then
   mv package/honk-src-tmp/honk package/honk
   mv package/honk-src-tmp/luci-app-honk package/luci-app-honk
   rm -rf package/honk-src-tmp
+  # honk: 去掉对 vmlinux-btf 包的依赖（用内核内置 BTF，内核已开 CONFIG_KERNEL_DEBUG_INFO_BTF）
+  # 否则缺 vmlinux-btf 包会导致 package/install 阶段报错
+  HONK_MAKEFILE="package/honk/Makefile"
+  if [ -f "$HONK_MAKEFILE" ]; then
+    sed -i '/+HONK_USE_VMLINUX_BTF:vmlinux-btf/d' "$HONK_MAKEFILE"
+    grep -q "vmlinux-btf" "$HONK_MAKEFILE" && { echo "ERROR: failed to patch honk Makefile"; exit 1; }
+    echo "honk Makefile patched: vmlinux-btf dependency removed"
+  fi
   echo "honk packages prepared from kenzok8/small"
 fi
 
