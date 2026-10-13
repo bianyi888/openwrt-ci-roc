@@ -333,6 +333,15 @@ if package_enabled luci-app-honk honk; then
   echo "honk packages prepared from kenzok8/small"
 fi
 
+# 亚瑟 jdcloud_re-ss-01：honk 需要内核 BTF，FIT 内核约 7.2MB 超 6M 上限
+# （check-size 会删掉超限镜像，导致 sysupgrade 生成失败；2026-10-09 同故障）
+# 用户 uboot 为 chenxin527 12m 自适应版（自动识别内核大小），放大到 8M 安全
+IPQ60XX_IMAGE_MK="target/linux/qualcommax/image/ipq60xx.mk"
+sed -i '/^define Device\/jdcloud_re-ss-01$/,/^endef$/ s/^\tKERNEL_SIZE := 6144k$/\tKERNEL_SIZE := 8192k/' "$IPQ60XX_IMAGE_MK"
+grep -A8 '^define Device/jdcloud_re-ss-01$' "$IPQ60XX_IMAGE_MK" | grep -q 'KERNEL_SIZE := 8192k' \
+  || { echo "ERROR: KERNEL_SIZE patch did not apply for jdcloud_re-ss-01"; exit 1; }
+echo "kernel size patched: jdcloud_re-ss-01 KERNEL_SIZE 6144k -> 8192k"
+
 if package_enabled luci-app-wechatpush; then
   rm -rf feeds/luci/applications/luci-app-wechatpush
   clone_repository https://github.com/tty228/luci-app-wechatpush master package/luci-app-wechatpush
