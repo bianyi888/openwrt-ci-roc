@@ -364,14 +364,19 @@ if config_symbol_enabled "CONFIG_KERNEL_DEBUG_INFO_BTF"; then
   fi
 fi
 
-# 亚瑟 jdcloud_re-ss-01：honk 需要内核 BTF，FIT 内核约 7.2MB 超 6M 上限
-# （check-size 会删掉超限镜像，导致 sysupgrade 生成失败；2026-10-09 同故障）
+# 亚瑟 jdcloud 全系（re-ss-01/re-cs-02/re-cs-07）：honk 需要内核 BTF，
+# FIT 内核约 7.2MB 超 6M 上限（check-size 会删掉超限的内核镜像，导致
+# sysupgrade 生成失败；2026-10-09 同故障）。注意构建会连带编译全部
+# TARGET_DEVICES——上次只修了 re-ss-01，run 38440266074 在 re-cs-02 的
+# 内核镜像检查处失败（7601844 > 6291456），re-cs-07 同样超限。
 # 用户 uboot 为 chenxin527 12m 自适应版（自动识别内核大小），放大到 8M 安全
 IPQ60XX_IMAGE_MK="target/linux/qualcommax/image/ipq60xx.mk"
-sed -i '/^define Device\/jdcloud_re-ss-01$/,/^endef$/ s/^\tKERNEL_SIZE := 6144k$/\tKERNEL_SIZE := 8192k/' "$IPQ60XX_IMAGE_MK"
-grep -A8 '^define Device/jdcloud_re-ss-01$' "$IPQ60XX_IMAGE_MK" | grep -q 'KERNEL_SIZE := 8192k' \
-  || { echo "ERROR: KERNEL_SIZE patch did not apply for jdcloud_re-ss-01"; exit 1; }
-echo "kernel size patched: jdcloud_re-ss-01 KERNEL_SIZE 6144k -> 8192k"
+PATCHED_BEFORE=$(grep -c '^\tKERNEL_SIZE := 6144k$' "$IPQ60XX_IMAGE_MK")
+sed -i 's/^\tKERNEL_SIZE := 6144k$/\tKERNEL_SIZE := 8192k/' "$IPQ60XX_IMAGE_MK"
+PATCHED_AFTER=$(grep -c '^\tKERNEL_SIZE := 8192k$' "$IPQ60XX_IMAGE_MK")
+[ "$PATCHED_BEFORE" -ge 1 ] && [ "$PATCHED_AFTER" -ge "$PATCHED_BEFORE" ] \
+  || { echo "ERROR: KERNEL_SIZE patch did not apply (before=$PATCHED_BEFORE after=$PATCHED_AFTER)"; exit 1; }
+echo "kernel size patched: $PATCHED_BEFORE jdcloud device(s) KERNEL_SIZE 6144k -> 8192k"
 
 if package_enabled luci-app-wechatpush; then
   rm -rf feeds/luci/applications/luci-app-wechatpush
