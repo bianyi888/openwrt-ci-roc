@@ -371,9 +371,9 @@ fi
 # 内核镜像检查处失败（7601844 > 6291456），re-cs-07 同样超限。
 # 用户 uboot 为 chenxin527 12m 自适应版（自动识别内核大小），放大到 8M 安全
 IPQ60XX_IMAGE_MK="target/linux/qualcommax/image/ipq60xx.mk"
-PATCHED_BEFORE=$(grep -c '^\tKERNEL_SIZE := 6144k$' "$IPQ60XX_IMAGE_MK")
+PATCHED_BEFORE=$(grep -c '^[[:space:]]*KERNEL_SIZE := 6144k$' "$IPQ60XX_IMAGE_MK")
 sed -i 's/^\tKERNEL_SIZE := 6144k$/\tKERNEL_SIZE := 8192k/' "$IPQ60XX_IMAGE_MK"
-PATCHED_AFTER=$(grep -c '^\tKERNEL_SIZE := 8192k$' "$IPQ60XX_IMAGE_MK")
+PATCHED_AFTER=$(grep -c '^[[:space:]]*KERNEL_SIZE := 8192k$' "$IPQ60XX_IMAGE_MK")
 [ "$PATCHED_BEFORE" -ge 1 ] && [ "$PATCHED_AFTER" -ge "$PATCHED_BEFORE" ] \
   || { echo "ERROR: KERNEL_SIZE patch did not apply (before=$PATCHED_BEFORE after=$PATCHED_AFTER)"; exit 1; }
 echo "kernel size patched: $PATCHED_BEFORE jdcloud device(s) KERNEL_SIZE 6144k -> 8192k"
