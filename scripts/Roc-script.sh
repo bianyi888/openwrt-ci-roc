@@ -333,6 +333,37 @@ if package_enabled luci-app-honk honk; then
   echo "honk packages prepared from kenzok8/small"
 fi
 
+# 内核 BTF 连锁钉死：CONFIG_KERNEL_DEBUG_INFO_BTF=y 会经
+# KERNEL_BPF_EVENTS->KERNEL_KPROBES->KERNEL_PERF_EVENTS 把内核
+# "Performance monitor support" 菜单及 BTF 子选项变为可见，其中部分符号
+# （ARM64_BRBE、MODULE_ALLOW_BTF_MISMATCH 等）在 defconfig 里无值，
+# 内核 syncconfig 会交互提问，非交互构建直接失败（run 38406475646/38426656361）。
+# 注意：CONFIG_KERNEL_<SYM>=n 写进 General.Honk.config 对这类符号无效——
+# 若 <SYM> 未在 OpenWrt 的 config/Config-kernel.in 里定义，顶层 make defconfig
+# 会把它当未知符号静默丢弃，根本到不了内核 .config。必须把内核原生符号
+# 直接钉进 target 内核配置（kconfig.pl 在内核编译时合并读取）。
+if config_symbol_enabled "CONFIG_KERNEL_DEBUG_INFO_BTF"; then
+  IPQ60XX_CONFIG_DEFAULT="target/linux/qualcommax/ipq60xx/config-default"
+  if [ -f "$IPQ60XX_CONFIG_DEFAULT" ] && ! grep -q "BTF/PMU symbols pinned" "$IPQ60XX_CONFIG_DEFAULT"; then
+    {
+      echo ""
+      echo "# BTF/PMU symbols pinned for non-interactive kernel syncconfig (Roc-script.sh)"
+      echo "# CONFIG_ARM_CCI_PMU is not set"
+      echo "# CONFIG_ARM_CCN is not set"
+      echo "# CONFIG_ARM_CMN is not set"
+      echo "# CONFIG_ARM_NI is not set"
+      echo "CONFIG_ARM_PMU=y"
+      echo "# CONFIG_ARM_SMMU_V3_PMU is not set"
+      echo "# CONFIG_ARM_DSU_PMU is not set"
+      echo "# CONFIG_ARM_SPE_PMU is not set"
+      echo "# CONFIG_ARM64_BRBE is not set"
+      echo "CONFIG_DEBUG_INFO_BTF_MODULES=y"
+      echo "# CONFIG_MODULE_ALLOW_BTF_MISMATCH is not set"
+    } >> "$IPQ60XX_CONFIG_DEFAULT"
+    echo "kernel config pinned: BTF/PMU symbols appended to $IPQ60XX_CONFIG_DEFAULT"
+  fi
+fi
+
 # 亚瑟 jdcloud_re-ss-01：honk 需要内核 BTF，FIT 内核约 7.2MB 超 6M 上限
 # （check-size 会删掉超限镜像，导致 sysupgrade 生成失败；2026-10-09 同故障）
 # 用户 uboot 为 chenxin527 12m 自适应版（自动识别内核大小），放大到 8M 安全
