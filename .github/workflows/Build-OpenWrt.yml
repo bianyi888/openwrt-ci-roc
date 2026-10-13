@@ -12,6 +12,10 @@ on:
       config_file:
         required: true
         type: string
+      general_config_file:
+        required: false
+        type: string
+        default: configs/General.config
       firmware_tag:
         required: true
         type: string
@@ -53,7 +57,7 @@ defaults:
     shell: bash
 
 env:
-  GENERAL_CONFIG_FILE: configs/General.config
+  GENERAL_CONFIG_FILE: ${{ inputs.general_config_file }}
   DIY_SCRIPT: scripts/Roc-script.sh
   OPENWRT_PATH: /mnt/openwrt
   TZ: Asia/Shanghai
