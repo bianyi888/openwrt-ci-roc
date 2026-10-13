@@ -325,7 +325,7 @@ if package_enabled luci-app-honk honk; then
   HONK_MAKEFILE="package/honk/Makefile"
   if [ -f "$HONK_MAKEFILE" ]; then
     sed -i '/+HONK_USE_VMLINUX_BTF:vmlinux-btf/d' "$HONK_MAKEFILE"
-    grep -q "vmlinux-btf" "$HONK_MAKEFILE" && { echo "ERROR: failed to patch honk Makefile"; exit 1; }
+    grep -q "HONK_USE_VMLINUX_BTF:vmlinux-btf" "$HONK_MAKEFILE" && { echo "ERROR: failed to patch honk Makefile"; exit 1; }
     echo "honk Makefile patched: vmlinux-btf dependency removed"
   fi
   echo "honk packages prepared from kenzok8/small"
