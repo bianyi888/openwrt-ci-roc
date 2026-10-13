@@ -1,0 +1,28 @@
+name: Arthur-NoWiFi-Honk-ImmortalWrt
+
+on:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  Build:
+    uses: ./.github/workflows/Build-OpenWrt.yml
+    permissions:
+      contents: write
+      actions: write
+    with:
+      repo_url: https://github.com/laipeng668/immortalwrt.git
+      repo_branch: openwrt-25.12
+      config_file: configs/JDCloud.NoWiFi.config
+      general_config_file: configs/General.Honk.config
+      firmware_tag: Arthur-NoWiFi-Honk
+      kernel_file: kernel-6.18
+      artifact_prefix: Arthur.NoWiFi.Honk.ImmortalWrt
+      manifest_file: immortalwrt-qualcommax-ipq60xx.manifest
+      rename_qualcommax_to_nowifi: true
+      release_summary: >-
+        亚瑟（JDCloud RE-SS-01）ImmortalWrt 25.12 内核 6.18 无 WiFi 版，带 honk（替代 daed/lucky），IP 192.168.5.1。
